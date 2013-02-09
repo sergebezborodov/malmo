@@ -20,7 +20,7 @@ Whats included:
 - Tag Caching behaviour, enabled by default
 - Unit tests for all internal components
 
-Is Malmo broke my exists project?
+Does Malmo broke my exists project?
 ---------------------------------
 NO, and one more NO. Malmo doesn't change any exists Yii Api, only extends it.
 
