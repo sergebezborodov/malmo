@@ -1,0 +1,81 @@
+Это расширение представляет из себя набор компонентов для реализации воркеров.
+Воркеры - это асинхронные приложения, которые выполняют фоновую работу типа рассылки писем,
+ресайза картинок или импорта множества xml файлов.
+
+Пример использования.
+
+Допустим, у нас обычная структура Yii app:
+<code>
+protected/
+  components/
+  controllers/
+  models/
+  extensions/
+  ...
+</code>
+
+Загружаем расширение в protected/extensions/worker/ .
+
+Создаем новый конфигурационный файл protected/config/worker.php:
+<code>
+return array(
+	"basePath"=>dirname(__FILE__).DIRECTORY_SEPARATOR."..",
+	"import"=>array(
+		"ext.worker.*",
+	),
+	"components"=>array(
+		"worker"=>array(
+			"class"=>"WorkerDaemon",
+			"servers"=>array("127.0.0.1"),
+		),
+		"router"=>array(
+			"class"=>"WorkerRouter",
+			"routes"=>array(
+				"reverse"=>"application.controllers.gearman",
+			),
+		),
+	),
+);
+</code>
+
+Создаем bootstrap файл protected/worker.php, которым будет запускаться скрипт.
+<code>
+// change the following paths if necessary
+$yii="yii/yii.php";
+$config="config/worker.php";
+
+require_once($yii);
+require_once("extensions/worker/WorkerApplication.php");
+
+Yii::createApplication("WorkerApplication", $config)->run();
+</code>
+
+Добавим контроллер:
+<code>
+class WorkerController extends AbstractWorkerController
+{
+	public function actionReverse(WorkerJob $job)
+	{
+		$job->sendComplete($job->getWorkload());
+	    echo $job->getWorkload();
+	    echo "\n";
+	}
+}
+</code>
+
+Запустим воркер в консоли:
+<code>
+home$: php protected/worker.php
+</code>
+
+И попробуем запустить его:
+<code>
+$client = new GearmanClient();
+$client->addServer("127.0.0.1");
+
+//$result = $client->do("reverse", "string");
+$client->addTaskBackground("reverse", "Hello world");
+$client->runTasks();
+</code>
+
+В консоли, где запустили воркер, вы увидите собственно переданное от клиента сообщение.
