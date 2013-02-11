@@ -14,4 +14,4 @@ before_script:
   - mysql -e 'create database malmo_test;'
   - echo "<?php return array();" > config-local.php
 
-script: phpunit malmo/ --colors --no-globals-backup
+script: phpunit --colors --no-globals-backup malmo/
