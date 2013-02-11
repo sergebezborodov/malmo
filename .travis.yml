@@ -12,5 +12,6 @@ services:
 before_script:
   - cd tests
   - mysql -e 'create database malmo_test;'
+  - echo "<?php return array();" > config-local.php
 
 script: phpunit malmo/ --colors --no-globals-backup
