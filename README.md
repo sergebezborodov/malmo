@@ -7,6 +7,8 @@ Malmo is great for middle size system - from simple e-shops to complex search an
 
 With Malmo you get application skeleton, ready for development without any additional configuration.
 
+[![Build Status](https://travis-ci.org/sergebezborodov/malmo.png?branch=master)](https://travis-ci.org/sergebezborodov/malmo)
+
 Whats included:
 --------------
 - Gearman worker application for fast start with gearman service.
