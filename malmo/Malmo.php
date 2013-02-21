@@ -52,6 +52,7 @@ class Malmo extends YiiBase
      */
     public static function init()
     {
+        self::setPathOfAlias('root', ROOT);
         self::setPathOfAlias('malmo', MALMO_PATH);
         self::setPathOfAlias('malmo-ext', MALMO_EXT_PATH);
 
