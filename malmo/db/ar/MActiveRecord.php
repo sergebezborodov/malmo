@@ -59,7 +59,7 @@ class MActiveRecord extends CActiveRecord
         }
 
         if ($this->isNewRecord
-            && $this->{$this->createdField}
+            && !empty($this->{$this->createdField})
             && isset($this->getMetaData()->tableSchema->columns[$this->createdField])) {
 
             $this->{$this->createdField} = new CDbExpression('NOW()');
