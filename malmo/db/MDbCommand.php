@@ -16,95 +16,20 @@ class MDbCommand extends CDbCommand
      * @param array $params the parameters (name=>value) to be bound to the query
      * @param string $operator AND|OR
      * @return MDbCommand the command object itself
+     * @deprecated
      */
     public function addWhere($conditions, $params = array(), $operator = 'AND')
     {
-        $operator = strtoupper($operator);
-        if ($operator != 'OR' && $operator != 'AND') {
-            throw new MDbCommandException('Invalid operator for command');
-        }
-
-        $where = $this->getWhere();
-        $where .= ' ' . $operator . ' ' . $this->processConditions($conditions);
-        $this->setWhere($where);
-
-        foreach($params as $k => $v) {
-            $this->params[$k] = $v;
+        $operator = strtolower($operator);
+        if ($operator == 'and') {
+            $this->andWhere($conditions, $params);
+        } else {
+            $this->orWhere($conditions, $params);
         }
 
         return $this;
     }
 
-    /**
-     * Generates the condition string that will be put in the WHERE part
-     * @param mixed $conditions the conditions that will be put in the WHERE part.
-     * @return string the condition string to put in the WHERE part
-     */
-    private function processConditions($conditions)
-    {
-        if(!is_array($conditions))
-            return $conditions;
-        elseif($conditions===array())
-            return '';
-        $n=count($conditions);
-        $operator=strtoupper($conditions[0]);
-        if($operator==='OR' || $operator==='AND')
-        {
-            $parts=array();
-            for($i=1;$i<$n;++$i)
-            {
-                $condition=$this->processConditions($conditions[$i]);
-                if($condition!=='')
-                    $parts[]='('.$condition.')';
-            }
-            return $parts===array() ? '' : implode(' '.$operator.' ', $parts);
-        }
-
-        if(!isset($conditions[1],$conditions[2]))
-            return '';
-
-        $column=$conditions[1];
-        if(strpos($column,'(')===false)
-            $column=$this->getConnection()->quoteColumnName($column);
-
-        $values=$conditions[2];
-        if(!is_array($values))
-            $values=array($values);
-
-        if($operator==='IN' || $operator==='NOT IN')
-        {
-            if($values===array())
-                return $operator==='IN' ? '0=1' : '';
-            foreach($values as $i=>$value)
-            {
-                if(is_string($value))
-                    $values[$i]=$this->getConnection()->quoteValue($value);
-                else
-                    $values[$i]=(string)$value;
-            }
-            return $column.' '.$operator.' ('.implode(', ',$values).')';
-        }
-
-        if($operator==='LIKE' || $operator==='NOT LIKE' || $operator==='OR LIKE' || $operator==='OR NOT LIKE')
-        {
-            if($values===array())
-                return $operator==='LIKE' || $operator==='OR LIKE' ? '0=1' : '';
-
-            if($operator==='LIKE' || $operator==='NOT LIKE')
-                $andor=' AND ';
-            else
-            {
-                $andor=' OR ';
-                $operator=$operator==='OR LIKE' ? 'LIKE' : 'NOT LIKE';
-            }
-            $expressions=array();
-            foreach($values as $value)
-                $expressions[]=$column.' '.$operator.' '.$this->getConnection()->quoteValue($value);
-            return implode($andor,$expressions);
-        }
-
-        throw new CDbException(Yii::t('yii', 'Unknown operator "{operator}".', array('{operator}'=>$operator)));
-    }
 
 
     /**

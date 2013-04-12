@@ -73,10 +73,10 @@ class DbCommandTest extends CDbTestCase
             ->where('1=1');
 
         $command->addWhere('1=0');
-        $this->assertEquals('1=1 AND 1=0', $command->getWhere());
+        $this->assertEquals('(1=1) AND (1=0)', $command->getWhere());
 
         $command->addWhere(array('and', '1=3', '2=3'));
-        $this->assertEquals('1=1 AND 1=0 AND (1=3) AND (2=3)', $command->getWhere());
+        $this->assertEquals('((1=1) AND (1=0)) AND ((1=3) AND (2=3))', $command->getWhere());
 
         $command->where('1=1');
         $this->assertEquals('1=1', $command->getWhere());
