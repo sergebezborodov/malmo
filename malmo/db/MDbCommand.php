@@ -61,7 +61,7 @@ class MDbCommand extends CDbCommand
             }
         } else {
             foreach ($result as $v) {
-                $items[array_shift($v)] = $v;
+                $items[reset($v)] = $v;
             }
         }
 
