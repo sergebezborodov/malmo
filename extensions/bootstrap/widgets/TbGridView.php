@@ -1,17 +1,21 @@
 <?php
 /**
- * TbGridView class file.
+ *## TbGridView class file.
+ *
  * @author Christoffer Niska <ChristofferNiska@gmail.com>
  * @copyright Copyright &copy; Christoffer Niska 2011-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package bootstrap.widgets
+ * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php) 
  */
 
 Yii::import('zii.widgets.grid.CGridView');
 Yii::import('bootstrap.widgets.TbDataColumn');
 
 /**
- * Bootstrap Zii grid view.
+ *## Bootstrap Zii grid view.
+ *
+ * @property CActiveDataProvider $dataProvider the data provider for the view.
+ *
+ * @package booster.widgets.grids
  */
 class TbGridView extends CGridView
 {
@@ -23,18 +27,21 @@ class TbGridView extends CGridView
 
 	/**
 	 * @var string|array the table type.
-	 * Valid values are 'striped', 'bordered', ' condensed' and/or 'hover'.
+	 * Valid values are 'striped', 'bordered', 'condensed' and/or 'hover'.
 	 */
 	public $type;
+
 	/**
 	 * @var string the CSS class name for the pager container. Defaults to 'pagination'.
 	 */
 	public $pagerCssClass = 'pagination';
+
 	/**
 	 * @var array the configuration for the pager.
 	 * Defaults to <code>array('class'=>'ext.bootstrap.widgets.TbPager')</code>.
 	 */
-	public $pager = array('class'=>'bootstrap.widgets.TbPager');
+	public $pager = array('class' => 'bootstrap.widgets.TbPager');
+
 	/**
 	 * @var string the URL of the CSS file used by this grid view.
 	 * Defaults to false, meaning that no CSS will be included.
@@ -47,6 +54,13 @@ class TbGridView extends CGridView
 	public $responsiveTable = false;
 
 	/**
+	 * @var array of additional parameters to pass to values
+	 */
+	public $extraParams = array();
+
+	/**
+	 *### .init()
+	 *
 	 * Initializes the widget.
 	 */
 	public function init()
@@ -54,36 +68,34 @@ class TbGridView extends CGridView
 		parent::init();
 
 		$classes = array('table');
-
-		if (isset($this->type))
-		{
-			if (is_string($this->type))
+		if (isset($this->type)) {
+			if (is_string($this->type)) {
 				$this->type = explode(' ', $this->type);
+			}
 
-			$validTypes = array(self::TYPE_STRIPED, self::TYPE_BORDERED, self::TYPE_CONDENSED, self::TYPE_HOVER);
+			if (!empty($this->type)) {
+				$validTypes = array(self::TYPE_STRIPED, self::TYPE_BORDERED, self::TYPE_CONDENSED, self::TYPE_HOVER);
 
-			if (!empty($this->type))
-			{
-				foreach ($this->type as $type)
-				{
-					if (in_array($type, $validTypes))
-						$classes[] = 'table-'.$type;
+				foreach ($this->type as $type) {
+					if (in_array($type, $validTypes)) {
+						$classes[] = 'table-' . $type;
+					}
 				}
 			}
 		}
 
-		if (!empty($classes))
-		{
+		if (!empty($classes)) {
 			$classes = implode(' ', $classes);
-			if (isset($this->itemsCssClass))
-				$this->itemsCssClass .= ' '.$classes;
-			else
+			if (isset($this->itemsCssClass)) {
+				$this->itemsCssClass .= ' ' . $classes;
+			} else {
 				$this->itemsCssClass = $classes;
+			}
 		}
 
 		$popover = Yii::app()->bootstrap->popoverSelector;
 		$tooltip = Yii::app()->bootstrap->tooltipSelector;
-		
+
 		$afterAjaxUpdate = "js:function() {
 			jQuery('.popover').remove();
 			jQuery('{$popover}').popover();
@@ -91,63 +103,80 @@ class TbGridView extends CGridView
 			jQuery('{$tooltip}').tooltip();
 		}";
 
-		if (!isset($this->afterAjaxUpdate))
+		if (!isset($this->afterAjaxUpdate)) {
 			$this->afterAjaxUpdate = $afterAjaxUpdate;
+		}
 	}
 
 	/**
+	 *### .initColumns()
+	 *
 	 * Creates column objects and initializes them.
 	 */
 	protected function initColumns()
 	{
-		foreach ($this->columns as $i => $column)
-		{
-			if (is_array($column) && !isset($column['class']))
+		foreach ($this->columns as $i => $column) {
+			if (is_array($column) && !isset($column['class'])) {
 				$this->columns[$i]['class'] = 'bootstrap.widgets.TbDataColumn';
+			}
 		}
 
 		parent::initColumns();
 
-		if($this->responsiveTable)
+		if ($this->responsiveTable) {
 			$this->writeResponsiveCss();
+		}
 	}
 
 	/**
+	 *### .createDataColumn()
+	 *
 	 * Creates a column based on a shortcut column specification string.
+	 *
 	 * @param mixed $text the column specification string
+	 *
 	 * @return \TbDataColumn|\CDataColumn the column instance
 	 * @throws CException if the column format is incorrect
 	 */
 	protected function createDataColumn($text)
 	{
-		if (!preg_match('/^([\w\.]+)(:(\w*))?(:(.*))?$/', $text, $matches))
-			throw new CException(Yii::t('zii', 'The column must be specified in the format of "Name:Type:Label", where "Type" and "Label" are optional.'));
+		if (!preg_match('/^([\w\.]+)(:(\w*))?(:(.*))?$/', $text, $matches)) {
+			throw new CException(Yii::t(
+				'zii',
+				'The column must be specified in the format of "Name:Type:Label", where "Type" and "Label" are optional.'
+			));
+		}
 
 		$column = new TbDataColumn($this);
 		$column->name = $matches[1];
 
-		if (isset($matches[3]) && $matches[3] !== '')
+		if (isset($matches[3]) && $matches[3] !== '') {
 			$column->type = $matches[3];
+		}
 
-		if (isset($matches[5]))
+		if (isset($matches[5])) {
 			$column->header = $matches[5];
+		}
 
 		return $column;
 	}
 
 	/**
+	 *### .writeResponsiveCss()
+	 *
 	 * Writes responsiveCSS
 	 */
 	protected function writeResponsiveCss()
 	{
-		$cnt = 1; $labels='';
-		foreach($this->columns as $column)
-		{
+		$cnt = 1;
+		$labels = '';
+		foreach ($this->columns as $column) {
+			/** @var TbDataColumn $column */
 			ob_start();
 			$column->renderHeaderCell();
 			$name = strip_tags(ob_get_clean());
 
-			$labels .= "td:nth-of-type($cnt):before { content: '{$name}'; }\n";
+			$labels .= "#$this->id td:nth-of-type($cnt):before { content: '{$name}'; }\n";
 			$cnt++;
 		}
 
@@ -198,6 +227,6 @@ class TbGridView extends CGridView
 		{$labels}
 	}
 EOD;
-		Yii::app()->clientScript->registerCss(__CLASS__.'#'.$this->id, $css);
+		Yii::app()->clientScript->registerCss(__CLASS__ . '#' . $this->id, $css);
 	}
 }

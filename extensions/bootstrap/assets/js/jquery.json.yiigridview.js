@@ -100,7 +100,7 @@
                                 params = $.deparam.querystring(url);
 
                             delete params[settings.ajaxVar];
-                            window.History.pushState(null, null, $.param.querystring(url.substr(0, url.indexOf('?')), params));
+                            window.History.pushState(null, document.title, $.param.querystring(url.substr(0, url.indexOf('?')), params));
                         } else {
                             $('#' + id).yiiJsonGridView('update', {url: $that.attr('href')});
                         }
@@ -109,8 +109,18 @@
                 }
 
                 $(document).on('change.yiiJsonGridView keydown.yiiJsonGridView', inputSelector, function (event) {
-                    if (event.type == 'keydown' && event.keyCode != 13) {
-                        return; // only react to enter key, not to other keys
+                    if (event.type === 'keydown') {
+                        if( event.keyCode !== 13) {
+                            return; // only react to enter key
+                        } else {
+                            eventType = 'keydown'; 
+                        }
+                    } else {
+                        // prevent processing for both keydown and change events
+                        if (eventType === 'keydown') {
+                            eventType = '';
+                            return;
+                        }
                     }
                     var data = $(inputSelector).serialize();
                     if (settings.pageVar !== undefined) {
@@ -248,7 +258,7 @@
                     settings = gridSettings[id];
                 $grid.addClass(settings.loadingClass);
 
-                options = $.extend({
+                var localOptions = $.extend({
                     type: 'GET',
                     url: $grid.yiiJsonGridView('getUrl'),
                     dataType: 'json',
@@ -260,8 +270,19 @@
                         $grid.removeClass(settings.loadingClass);
                         $grid.find('tbody').jqotesub(settings.rowTemplate, data.rows);
                         $grid.find('.keys').jqotesub(settings.keysTemplate, data.keys);
-                        data.pager.length ? $grid.find('.'+settings.pagerClass+' ul').jqotesub(settings.pagerTemplate, data.pager).show() : $grid.find('.' + settings.pagerClass).hide();
 
+                        if (data.pager.length ) {
+                            $( '.' + settings.pagerClass + ' ul', $grid ).jqotesub(settings.pagerTemplate, data.pager);
+                            $( '.' + settings.pagerClass, $grid ).show();
+                        } else {
+                            $( '.' + settings.pagerClass, $grid ).hide();
+                        }
+
+                        var url_params = $.deparam.querystring(data.url);
+                        delete url_params[settings.ajaxVar];
+                        $grid.find('.keys').attr('title', $.param.querystring(data.url.substr(0, data.url.indexOf('?')), url_params));
+
+                        data.pager.length ? $grid.find('.'+settings.pagerClass+' ul').jqotesub(settings.pagerTemplate, data.pager).show() : $grid.find('.' + settings.pagerClass).hide();
 
                         $.each(data.headers, function(){
                             var $header = $('#' + this.id );
@@ -318,31 +339,31 @@
                         }
                     }
                 }, options || {});
-                if (options.data !== undefined && options.type === 'GET') {
-                    options.url = $.param.querystring(options.url, options.data);
-                    options.data = {};
+                if (localOptions.data !== undefined && localOptions.type === 'GET') {
+                    localOptions.url = $.param.querystring(localOptions.url, localOptions.data);
+                    localOptions.data = {};
                 }
 
                 if (settings.ajaxUpdate !== false) {
-                    options.url = $.param.querystring(options.url, settings.ajaxVar + '=' + id);
+                    localOptions.url = $.param.querystring(localOptions.url, settings.ajaxVar + '=' + id);
                     if (settings.beforeAjaxUpdate !== undefined) {
-                        settings.beforeAjaxUpdate(id, options);
+                        settings.beforeAjaxUpdate(id, localOptions);
                     }
-                    $.ajax(options);
+                    $.ajax(localOptions);
                 } else {  // non-ajax mode
                     if (options.type === 'GET') {
-                        window.location.href = options.url;
+                        window.location.href = localOptions.url;
                     } else {  // POST mode
-                        $form = $('<form action="' + options.url + '" method="post"></form>').appendTo('body');
-                        if (options.data === undefined) {
-                            options.data = {};
+                        $form = $('<form action="' + localOptions.url + '" method="post"></form>').appendTo('body');
+                        if (localOptions.data === undefined) {
+                            localOptions.data = {};
                         }
 
-                        if (options.data.returnUrl === undefined) {
-                            options.data.returnUrl = window.location.href;
+                        if (localOptions.data.returnUrl === undefined) {
+                            localOptions.data.returnUrl = window.location.href;
                         }
 
-                        $.each(options.data, function (name, value) {
+                        $.each(localOptions.data, function (name, value) {
                             $form.append($('<input type="hidden" name="t" value="" />').attr('name', name).val(value));
                         });
                         $form.submit();

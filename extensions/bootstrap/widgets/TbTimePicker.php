@@ -1,40 +1,46 @@
 <?php
 /**
- * TbTimePicker class file.
- * @since 1.0.3
- * @see http://jdewit.github.com/bootstrap-timepicker/
+ *## TbTimePicker class file.
  */
 
 /**
- * TbTimePicker widget.
+ *## TbTimePicker widget.
+ *
+ * @see http://jdewit.github.com/bootstrap-timepicker/
+ *
+ * @since 1.0.3
+ * @package booster.widgets.forms.inputs
  */
 class TbTimePicker extends CInputWidget
 {
+	/**
+	 * @var TbActiveForm
+	 */
 	public $form;
 
 	/**
 	 * @var array the options for the Bootstrap JavaScript plugin.
 	 * Available options:
-	 * template	string
+	 * template    string
 	 *      'dropdown' (default), Show picker in a dropdown
 	 *      'modal', Show picker in a modal
 	 *      false, Don't show a widget
-	 * minuteStep	integer	15	Specify a step for the minute field.
-	 * showSeconds	boolean	false	Show the seconds field.
-	 * secondStep	integer	15	Specify a step for the second field.
-	 * defaultTime	string
+	 * minuteStep    integer    15    Specify a step for the minute field.
+	 * showSeconds    boolean    false    Show the seconds field.
+	 * secondStep    integer    15    Specify a step for the second field.
+	 * defaultTime    string
 	 *      'current' (default) Set to the current time.
 	 *      'value' Set to inputs current value
-	 *      false	Do not set a default time
-	 * showMeridian	boolean
+	 *      false    Do not set a default time
+	 * showMeridian    boolean
 	 *      true (default)  12hr mode
 	 *      false24hr mode
-	 * showInputs	boolean
+	 * showInputs    boolean
 	 *      true (default )Shows the text inputs in the widget.
 	 *      false Hide the text inputs in the widget
-	 * disableFocus	boolean	false	Disables the input from focusing. This is useful for touch screen devices that
+	 * disableFocus    boolean    false    Disables the input from focusing. This is useful for touch screen devices that
 	 *          display a keyboard on input focus.
-	 * modalBackdrop	boolean	false	Show modal backdrop.
+	 * modalBackdrop    boolean    false    Show modal backdrop.
 	 */
 	public $options = array();
 
@@ -55,14 +61,20 @@ class TbTimePicker extends CInputWidget
 	{
 		list($name, $id) = $this->resolveNameID();
 
-		if ($this->hasModel())
-		{
-			if($this->form)
+		// Add a class of no-user-select to widget
+		$this->htmlOptions['class'] = empty($this->htmlOptions['class'])
+			? 'no-user-select'
+			: 'no-user-select ' . $this->htmlOptions['class'];
+
+		if ($this->hasModel()) {
+			if ($this->form) {
 				echo $this->form->textField($this->model, $this->attribute, $this->htmlOptions);
-			else
+			} else {
 				echo CHtml::activeTextField($this->model, $this->attribute, $this->htmlOptions);
-		} else
+			}
+		} else {
 			echo CHtml::textField($name, $this->value, $this->htmlOptions);
+		}
 
 		$this->registerClientScript($id);
 
@@ -70,7 +82,8 @@ class TbTimePicker extends CInputWidget
 
 	/**
 	 * Registers required javascript files
-	 * @param $id
+	 *
+	 * @param string $id
 	 */
 	public function registerClientScript($id)
 	{
@@ -82,8 +95,9 @@ class TbTimePicker extends CInputWidget
 		ob_start();
 
 		echo "jQuery('#{$id}').timepicker({$options})";
-		foreach ($this->events as $event => $handler)
+		foreach ($this->events as $event => $handler) {
 			echo ".on('{$event}', " . CJavaScript::encode($handler) . ")";
+		}
 
 		Yii::app()->getClientScript()->registerScript(__CLASS__ . '#' . $id, ob_get_clean() . ';');
 	}

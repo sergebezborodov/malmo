@@ -1,20 +1,21 @@
 <?php
 /**
- * TbFormInputElement class file.
- *
- * The inputElementClass for TbForm
- *
- * Support for Yii formbuilder
+ *## TbFormInputElement class file.
  *
  * @author Joe Blocher <yii@myticket.at>
  * @copyright Copyright &copy; Joe Blocher 2012-
  * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package bootstrap.widgets
  */
 
+/**
+ *## The inputElementClass for TbForm
+ *
+ * Support for Yii formbuilder
+ *
+ * @package booster.widgets.forms.inputs
+ */
 class TbFormInputElement extends CFormInputElement
 {
-
 	/**
 	 * Wrap control-group/controls tags around custom types (CInputWidget or CJuiInputWidget)
 	 *
@@ -37,15 +38,12 @@ class TbFormInputElement extends CFormInputElement
 		'dropdownlist' => 'dropDownListRow',
 		'checkboxlist' => 'checkBoxListRow',
 		'radiolist' => 'radioButtonListRow',
-
 		//HTML5 types not supported in YiiBooster yet: render as textField
 		'url' => 'textFieldRow',
 		'email' => 'textFieldRow',
 		'number' => 'textFieldRow',
-
 		//'range'=>'activeRangeField', not supported yet
 		'date' => 'datepickerRow',
-
 		//new YiiBooster types
 		'captcha' => 'captchaRow',
 		'daterange' => 'dateRangeRow',
@@ -54,7 +52,10 @@ class TbFormInputElement extends CFormInputElement
 		'uneditable' => 'uneditableRow',
 		'radiolistinline' => 'radioButtonListInlineRow',
 		'checkboxlistinline' => 'checkBoxListInlineRow',
-		'select2' => 'select2Row'
+		'select2' => 'select2Row',
+        'wysihtml5' => 'html5EditorRow',
+        'toggle' => 'toggleButtonRow'
+
 	);
 
 	/**
@@ -78,18 +79,22 @@ class TbFormInputElement extends CFormInputElement
 	/**
 	 * Prepare the htmlOptions before calling the TbActiveForm method
 	 *
-	 * @param $options
+	 * @param array $options
+	 *
 	 * @return mixed
 	 */
 	protected function prepareHtmlOptions($options)
 	{
 		if (!empty($this->hint)) //restore hint from config as attribute
+		{
 			$options['hint'] = $this->hint;
+		}
 
 		//HTML5 types not supported in YiiBooster yet
 		//should be possible to set type="email", ... in the htmlOptions
-		if (array_key_exists($this->type, self::$htmlOptionTypes))
+		if (array_key_exists($this->type, self::$htmlOptionTypes)) {
 			$options['type'] = self::$htmlOptionTypes[$this->type];
+		}
 
 		return $options;
 	}
@@ -99,15 +104,13 @@ class TbFormInputElement extends CFormInputElement
 	 */
 	public function render()
 	{
-		if (!empty(self::$tbActiveFormMethods[$this->type]))
-		{
+		if (!empty(self::$tbActiveFormMethods[$this->type])) {
 			$method = self::$tbActiveFormMethods[$this->type];
 			$model = $this->getParent()->getModel();
 			$attribute = $this->name;
 			$htmlOptions = $this->prepareHtmlOptions($this->attributes);
 
-			switch ($method)
-			{
+			switch ($method) {
 				case 'checkBoxListRow':
 				case 'radioButtonListRow':
 				case 'dropDownListRow':
@@ -118,19 +121,18 @@ class TbFormInputElement extends CFormInputElement
 				default:
 					return $this->getActiveFormWidget()->$method($model, $attribute, $htmlOptions);
 			}
-		} else
-			if ($this->wrapBootstrapTags) //wrap tags controls/control-group
-			{
-				$error = $this->getParent()->showErrorSummary ? '' : $this->renderError();
-				$output = array(
-					'{label}' => $this->renderControlLabel(),
-					'{input}' => "<div class=\"controls\">\n" . $this->renderInput() . $error . $this->renderHint() . '</div>',
-					'{hint}' => '',
-					'{error}' => '',
-				);
-
-				return "<div class=\"control-group\">\n" . strtr($this->layout, $output) . '</div>';
-			}
+		} elseif ($this->wrapBootstrapTags) //wrap tags controls/control-group
+		{
+			$error = $this->getParent()->showErrorSummary ? '' : $this->renderError();
+			$output = array(
+				'{label}' => $this->renderControlLabel(),
+				'{input}' => "<div class=\"controls\">\n" . $this->renderInput() . $error . $this->renderHint(
+				) . '</div>',
+				'{hint}' => '',
+				'{error}' => '',
+			);
+			return "<div class=\"control-group\">\n" . strtr($this->layout, $output) . '</div>';
+		}
 
 		return parent::render();
 	}
@@ -146,8 +148,7 @@ class TbFormInputElement extends CFormInputElement
 			'class' => 'control-label'
 		);
 
-		if (!empty($this->attributes['id']))
-		{
+		if (!empty($this->attributes['id'])) {
 			$options['for'] = $this->attributes['id'];
 		}
 

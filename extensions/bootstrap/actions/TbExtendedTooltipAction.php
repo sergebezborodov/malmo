@@ -1,15 +1,17 @@
 <?php
 /**
- * TbExtendedTooltipAction.php
+ *## TbExtendedTooltipAction class file
  *
- * @author: antonio ramirez <antonio@clevertech.biz>
- * Date: 10/18/12
- * Time: 6:23 PM
+ * @author antonio ramirez <antonio@clevertech.biz>
+ */
+
+/**
+ *## Class TbExtendedTooltipAction
+ *
+ * @package booster.actions
  */
 class TbExtendedTooltipAction extends CAction
 {
-
-
 	/**
 	 * @var string the name of the table for keeping applied migration information.
 	 * This table will be automatically created if not exists. Defaults to 'tbl_tooltip'.
@@ -35,16 +37,17 @@ class TbExtendedTooltipAction extends CAction
 	{
 		$key = yii::app()->request->getParam('name');
 		$tooltip = Yii::app()->request->getParam('value');
-		if(!$key || !$tooltip)
-			throw new CHttpException(404, Yii::t('zii', 'Unauthorized request') );
+		if (!$key || !$tooltip) {
+			throw new CHttpException(404, Yii::t('zii', 'Unauthorized request'));
+		}
 
-		if(!$this->getDbConnection()
+		if (!$this->getDbConnection()
 			->createCommand()
-			->update($this->tooltipTable, array('tooltip'=>$tooltip),'tooltip_key=:key', array(':key'=>$key)))
-		{
+			->update($this->tooltipTable, array('tooltip' => $tooltip), 'tooltip_key=:key', array(':key' => $key))
+		) {
 			$this->getDbConnection()
 				->createCommand()
-				->insert($this->tooltipTable, array('tooltip_key'=>$key, 'tooltip'=>$tooltip));
+				->insert($this->tooltipTable, array('tooltip_key' => $key, 'tooltip' => $tooltip));
 		}
 	}
 
@@ -54,15 +57,19 @@ class TbExtendedTooltipAction extends CAction
 	 * You can call {@link setDbConnection} to switch to a different database connection.
 	 * Methods such as {@link insert}, {@link createTable} will use this database connection
 	 * to perform DB queries.
+	 * @throws CException
 	 * @return CDbConnection the currently active database connection
 	 */
 	protected function getDbConnection()
 	{
-		if ($this->_db === null)
-		{
+		if ($this->_db === null) {
 			$this->_db = Yii::app()->getComponent('db');
-			if (!$this->_db instanceof CDbConnection)
-				throw new CException(Yii::t('zii', 'The "db" application component must be configured to be a CDbConnection object.'));
+			if (!$this->_db instanceof CDbConnection) {
+				throw new CException(Yii::t(
+					'zii',
+					'The "db" application component must be configured to be a CDbConnection object.'
+				));
+			}
 		}
 		return $this->_db;
 	}

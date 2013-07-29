@@ -1,77 +1,162 @@
 <?php
 /**
- * EditableDetailView class file.
- * 
- * This widget makes editable several attributes of single model, shown as name-value table
- * 
+ *## EditableDetailView class file.
+ *
  * @author Vitaliy Potapov <noginsk@rambler.ru>
- * @link https://github.com/vitalets/yii-bootstrap-editable
+ * @link https://github.com/vitalets/x-editable-yii
  * @copyright Copyright &copy; Vitaliy Potapov 2012
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version 1.0.0
- * @since 10/2/12 12:24 AM  renamed class for YiiBooster integration antonio ramirez <antonio@clevertech.ibz>
+ * @version 1.1.0
  */
- 
+
 Yii::import('bootstrap.widgets.TbEditableField');
-Yii::import('zii.widgets.CDetailView');
+Yii::import('bootstrap.widgets.TbDetailView');
 
-class TbEditableDetailView extends CDetailView
+/**
+ * EditableDetailView widget makes editable CDetailView (several attributes of single model shown as name-value table).
+ *
+ * @package booster.widgets.editable
+*/
+class TbEditableDetailView extends TbDetailView
 {
-    //common url for all editables
-    public $url = '';
+	/**
+	 * @var string submit url for all editables in detailview
+	 */
+	/*
+	 commented due to using magic methods and setting any of default EditableField param
+	 from top level config of EditableDetailView
+	*/
+	//public $url = null;
 
-    //set bootstrap css
-    public $htmlOptions = array('class'=> 'table table-bordered table-striped table-hover table-condensed');
-    
-    /**
-     * @var string the URL of the CSS file used by this detail view.
-     * Defaults to false, meaning that no CSS will be included.
-     */
-    public $cssFile = false;
-    
-    public function init()
-    {
-        if (!$this->data instanceof CModel) {
-            throw new CException(Yii::t('zii','Property "data" should be of CModel class.'));
-        }
+	/**
+	 * @var array additional params to send on server
+	 */
+	/*
+	 commented due to using magic methods and setting any of default EditableField param
+	 from top level config of EditableDetailView
+	*/
+	//public $params = null;
 
-        parent::init();
-    }
+	/**
+	 *### .init()
+	 *
+	 * Widget initialization
+	 */
+	public function init()
+	{
+		if (!$this->data instanceof CModel) {
+			throw new CException('Property "data" should be of CModel class.');
+		}
 
-    protected function renderItem($options, $templateData)
-    {
-        //if editable set to false --> not editable
-        $isEditable = array_key_exists('editable', $options) && $options['editable'] !== false;
+		//set bootstrap css
+		$this->htmlOptions = array('class' => 'table table-bordered table-striped table-hover');
+		//disable loading Yii's css for bootstrap
+		$this->cssFile = false;
 
-        //if name not defined or it is not safe --> not editable
-        $isEditable = !empty($options['name']) && $this->data->isAttributeSafe($options['name']);
+		parent::init();
+	}
 
-        if ($isEditable) {    
-            //ensure $options['editable'] is array
-            if(!array_key_exists('editable', $options) || !is_array($options['editable'])) $options['editable'] = array();
+	/**
+	 *### .renderItem()
+	 */
+	protected function renderItem($options, $templateData)
+	{
+		//apply editable if not set 'editable' params or set and not false
+		$apply = !empty($options['name']) && (!isset($options['editable']) || $options['editable'] !== false);
 
-            //take common url
-            if (!array_key_exists('url', $options['editable'])) {
-                $options['editable']['url'] = $this->url;
-            }
+		if ($apply) {
+			//ensure $options['editable'] is array
+			if (!isset($options['editable'])) {
+				$options['editable'] = array();
+			}
 
-            $editableOptions = CMap::mergeArray($options['editable'], array(
-                'model'     => $this->data,
-                'attribute' => $options['name'],
-                'emptytext' => ($this->nullDisplay === null) ? Yii::t('zii', 'Not set') : strip_tags($this->nullDisplay),
-            ));
-            
-            //if value in detailview options provided, set text directly
-            if(array_key_exists('value', $options) && $options['value'] !== null) {
-                $editableOptions['text'] = $templateData['{value}'];
-                $editableOptions['encode'] = false;
-            }
+			//merge options with defaults: url, params, etc.
+			$options['editable'] = CMap::mergeArray($this->_data, $options['editable']);
 
-            $templateData['{value}'] = $this->controller->widget('TbEditableField', $editableOptions, true);
-        } 
+			//options to be passed into EditableField (constructed from $options['editable'])
+			$widgetOptions = array(
+				'model' => $this->data,
+				'attribute' => $options['name']
+			);
 
-        parent::renderItem($options, $templateData);
-    }
+			//if value in detailview options provided, set text directly (as value here means text)
+			if (isset($options['value']) && $options['value'] !== null) {
+				$widgetOptions['text'] = $templateData['{value}'];
+				$widgetOptions['encode'] = false;
+			}
 
+			$widgetOptions = CMap::mergeArray($widgetOptions, $options['editable']);
+			/** @var $widget TbEditableField */
+			$widget = $this->controller->createWidget('TbEditableField', $widgetOptions);
+
+			//'apply' maybe changed during init of widget (e.g. if related model has unsafe attribute)
+			if ($widget->apply) {
+				ob_start();
+				$widget->run();
+				$templateData['{value}'] = ob_get_clean();
+			}
+		}
+
+		parent::renderItem($options, $templateData);
+	}
+
+	//***************************************************************************************
+	// Generic getter/setter implementation to accept default configuration for EditableField
+	//***************************************************************************************
+
+	/** Data for default fields of EditableField */
+	private $_data = array();
+	/** Valid attributes for EditableField (singleton) */
+	private $_editableProperties;
+
+	/**
+	 * Get the properties available for {@link EditableField}.
+	 *
+	 * These properties can also be set for the {@link EditableDetailView} as default values.
+	 */
+	private function getEditableProperties()
+	{
+		if (!isset($this->_editableProperties)) {
+			$reflection = new ReflectionClass('TbEditableField');
+			$this->_editableProperties = array_map(
+				function ($d) {
+					/** @var ReflectionProperty $d */
+					return $d->getName();
+				},
+				$reflection->getProperties()
+			);
+		}
+		return $this->_editableProperties;
+	}
+
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__get()
+	 */
+	public function __get($key)
+	{
+		return (array_key_exists($key, $this->_data) ? $this->_data[$key] : parent::__get($key));
+	}
+
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__set()
+	 */
+	public function __set($key, $value)
+	{
+		if (in_array($key, $this->getEditableProperties())) {
+			$this->_data[$key] = $value;
+		} else {
+			parent::__set($key, $value);
+		}
+	}
+
+	/**
+	 * (non-PHPdoc)
+	 * @see CComponent::__isset()
+	 */
+	public function __isset($name)
+	{
+		return array_key_exists($name, $this->_data) || parent::__isset($name);
+	}
 }
 

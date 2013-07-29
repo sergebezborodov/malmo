@@ -1,30 +1,31 @@
 <?php
-
 /**
- * TbColorPicker widget class
+ *## TbColorPicker class file
  *
  * @author: yiqing95 <yiqing_95@qq.com>
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package YiiBooster bootstrap.widgets
+ * @author Antonio Ramirez <antonio@clevertech.biz>
+ * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
+ */
+
+/**
+ *## TbColorPicker widget class
+ *
  * ------------------------------------------------------------------------
  *   in yii  use this to register the necessary js and css files :
  *   <?php  $this->widget('bootstrap.widgets.TbColorPicker', array( )); ?>
  *   and the rest usage you'd better refer the original plugin
  *
- * @see http://www.eyecon.ro/bootstrap-colorpicker/
+ * @see <http://www.eyecon.ro/bootstrap-colorpicker/>
  * ------------------------------------------------------------------------
  *
- * - Changelog
- * @since 10/27/12 7:28 PM
- * @author Antonio Ramirez <antonio@clevertech.biz>
- * Total refactor to work as a widget instead of a class and allow the use of TbActiveForm
- *
+ * @package booster.widgets.forms.inputs
  */
 class TbColorPicker extends CInputWidget
 {
 
 	/**
-	 * @var TbActiveForm when created via TbActiveForm, this attribute is set to the form that renders the widget
+	 * @var TbActiveForm when created via TbActiveForm.
+	 * this attribute is set to the form that renders the widget
 	 * @see TbActionForm->inputRow
 	 */
 	public $form;
@@ -33,9 +34,10 @@ class TbColorPicker extends CInputWidget
 	 * @var string the color format - hex | rgb | rgba. Defaults to 'hex'
 	 */
 	public $format = 'hex';
+
 	/**
 	 * @var string[] the JavaScript event handlers.
-	 * @see http://www.eyecon.ro/bootstrap-colorpicker/ events section
+	 * @see <http://www.eyecon.ro/bootstrap-colorpicker/> events section
 	 *  show    This event fires immediately when the color picker is displayed.
 	 *  hide    This event is fired immediately when the color picker is hidden.
 	 *  changeColor    This event is fired when the color is changed.
@@ -46,13 +48,15 @@ class TbColorPicker extends CInputWidget
 	 *          console.log(ev.color.toHex());
 	 *      }',
 	 *      'hide'=>'js:function(ev){
-	 *    	console.log("I am hidden!");
+	 *        console.log("I am hidden!");
 	 *   }')
 	 * </pre>
 	 */
 	public $events = array();
 
 	/**
+	 *### .run()
+	 *
 	 * Widget's run function
 	 */
 	public function run()
@@ -64,21 +68,23 @@ class TbColorPicker extends CInputWidget
 		$this->htmlOptions['id'] = $id;
 
 		// Do we have a model?
-		if ($this->hasModel())
-		{
-			if ($this->form)
+		if ($this->hasModel()) {
+			if ($this->form) {
 				echo $this->form->textField($this->model, $this->attribute, $this->htmlOptions);
-			else
+			} else {
 				echo CHtml::activeTextField($this->model, $this->attribute, $this->htmlOptions);
-		} else
-		{
-			echo  CHtml::textField($name, $this->value, $this->htmlOptions);
+			}
+		} else {
+			echo CHtml::textField($name, $this->value, $this->htmlOptions);
 		}
 	}
 
 	/**
+	 *### .registerClientScript()
+	 *
 	 * Registers required
-	 * @param $id
+	 *
+	 * @param string $id
 	 */
 	public function registerClientScript($id)
 	{
@@ -89,8 +95,9 @@ class TbColorPicker extends CInputWidget
 
 		ob_start();
 		echo "jQuery('#{$id}').colorpicker({$options})";
-		foreach ($this->events as $event => $handler)
+		foreach ($this->events as $event => $handler) {
 			echo ".on('{$event}', " . CJavaScript::encode($handler) . ")";
+		}
 
 		Yii::app()->getClientScript()->registerScript(__CLASS__ . '#' . $this->getId(), ob_get_clean() . ';');
 	}

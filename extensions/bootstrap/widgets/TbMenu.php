@@ -1,17 +1,20 @@
 <?php
 /**
- * TbMenu class file.
+ *## TbMenu class file.
+ *
  * @author Christoffer Niska <ChristofferNiska@gmail.com>
  * @copyright Copyright &copy; Christoffer Niska 2012-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package bootstrap.widgets
+ * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php) 
  */
 
 Yii::import('bootstrap.widgets.TbBaseMenu');
 
 /**
  * Bootstrap menu.
- * @see http://twitter.github.com/bootstrap/components.html#navs
+ *
+ * @see <http://twitter.github.com/bootstrap/components.html#navs>
+ *
+ * @package booster.widgets.navigation
  */
 class TbMenu extends TbBaseMenu
 {
@@ -22,23 +25,29 @@ class TbMenu extends TbBaseMenu
 
 	/**
 	 * @var string the menu type.
+	 *
 	 * Valid values are 'tabs', 'pills', or 'list'.
 	 */
 	public $type;
+
 	/**
 	 * @var string|array the scrollspy target or configuration.
 	 */
 	public $scrollspy;
+
 	/**
 	 * @var boolean indicates whether the menu should appear vertically stacked.
 	 */
 	public $stacked = false;
+
 	/**
 	 * @var boolean indicates whether dropdowns should be dropups instead.
 	 */
 	public $dropup = false;
 
 	/**
+	 *### .init()
+	 *
 	 * Initializes the widget.
 	 */
 	public function init()
@@ -49,33 +58,38 @@ class TbMenu extends TbBaseMenu
 
 		$validTypes = array(self::TYPE_TABS, self::TYPE_PILLS, self::TYPE_LIST);
 
-		if (isset($this->type) && in_array($this->type, $validTypes))
-			$classes[] = 'nav-'.$this->type;
+		if (isset($this->type) && in_array($this->type, $validTypes)) {
+			$classes[] = 'nav-' . $this->type;
+		}
 
-		if ($this->stacked && $this->type !== self::TYPE_LIST)
+		if ($this->stacked && $this->type !== self::TYPE_LIST) {
 			$classes[] = 'nav-stacked';
+		}
 
-		if ($this->dropup === true)
+		if ($this->dropup === true) {
 			$classes[] = 'dropup';
+		}
 
-		if (isset($this->scrollspy))
-		{
-			$scrollspy = is_string($this->scrollspy) ? array('target'=>$this->scrollspy) : $this->scrollspy;
+		if (isset($this->scrollspy)) {
+			$scrollspy = is_string($this->scrollspy) ? array('target' => $this->scrollspy) : $this->scrollspy;
 			$this->widget('bootstrap.widgets.TbScrollSpy', $scrollspy);
 		}
 
-		if (!empty($classes))
-		{
+		if (!empty($classes)) {
 			$classes = implode(' ', $classes);
-			if (isset($this->htmlOptions['class']))
-				$this->htmlOptions['class'] .= ' '.$classes;
-			else
+			if (isset($this->htmlOptions['class'])) {
+				$this->htmlOptions['class'] .= ' ' . $classes;
+			} else {
 				$this->htmlOptions['class'] = $classes;
+			}
 		}
 	}
 
 	/**
+	 *### .getDividerCssClass()
+	 *
 	 * Returns the divider css class.
+	 *
 	 * @return string the class name
 	 */
 	public function getDividerCssClass()
@@ -84,7 +98,10 @@ class TbMenu extends TbBaseMenu
 	}
 
 	/**
+	 *### .getDropdownCssClass()
+	 *
 	 * Returns the dropdown css class.
+	 *
 	 * @return string the class name
 	 */
 	public function getDropdownCssClass()
@@ -93,7 +110,10 @@ class TbMenu extends TbBaseMenu
 	}
 
 	/**
+	 *### .isVertical()
+	 *
 	 * Returns whether this is a vertical menu.
+	 *
 	 * @return boolean the result
 	 */
 	public function isVertical()

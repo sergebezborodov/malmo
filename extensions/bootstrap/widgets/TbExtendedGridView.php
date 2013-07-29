@@ -1,17 +1,16 @@
 <?php
 /**
- * TbExtendedGridView class file
+ * ## TbExtendedGridView class file
  *
- *
- * @author: antonio ramirez <antonio@clevertech.biz>
+ * @author Antonio Ramirez <antonio@clevertech.biz>
  * @copyright Copyright &copy; Clevertech 2012-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package YiiBooster bootstrap.widgets
+ * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php) 
  */
+
 Yii::import('bootstrap.widgets.TbGridView');
 
 /**
- * TbExtendedGridView is an extended version of TbGridView.
+ *## TbExtendedGridView is an extended version of TbGridView.
  *
  * Features are:
  *  - Display an extended summary of the records shown. The extended summary can be configured to any of the
@@ -19,6 +18,11 @@ Yii::import('bootstrap.widgets.TbGridView');
  *  - Automatic chart display (using TbHighCharts widget), where user can 'switch' between views.
  *  - Selectable cells
  *  - Sortable rows
+ *
+ * @property CActiveDataProvider $dataProvider the data provider for the view.
+ * @property TbDataColumn[] $columns
+ *
+ * @package booster.widgets.grids
  */
 class TbExtendedGridView extends TbGridView
 {
@@ -33,6 +37,7 @@ class TbExtendedGridView extends TbGridView
 	 * to use $headerOffset=40;
 	 */
 	public $headerOffset = 0;
+
 	/**
 	 * @var string the template to be used to control the layout of various sections in the view.
 	 * These tokens are recognized: {extendedSummary}, {summary}, {items} and {pager}. They will be replaced with the
@@ -41,7 +46,8 @@ class TbExtendedGridView extends TbGridView
 	public $template = "{summary}\n{items}\n{pager}\n{extendedSummary}";
 
 	/**
-	 * @var array $extendedSummary displays an extended summary version. There are different types of summary types,
+	 * @var array $extendedSummary displays an extended summary version.
+	 * There are different types of summary types,
 	 * please, see {@link TbSumOperation}, {@link TbSumOfTypeOperation},{@link TbPercentOfTypeGooglePieOperation}
 	 * {@link TbPercentOfTypeOperation} and {@link TbPercentOfTypeEasyPieOperation}.
 	 *
@@ -52,7 +58,7 @@ class TbExtendedGridView extends TbGridView
 	 *  'extendedSummary' => array(
 	 *      'title' => '',      // the extended summary title
 	 *      'columns' => array( // the 'columns' that will be displayed at the extended summary
-	 *          'id' => array(  // colum name "id"
+	 *          'id' => array(  // column name "id"
 	 *              'class' => 'TbSumOperation', // what is the type of TbOperation we are going to display
 	 *              'label' => 'Sum of Ids'     // label is name of label of the resulted value (ie Sum of Ids:)
 	 *          ),
@@ -120,7 +126,7 @@ class TbExtendedGridView extends TbGridView
 	 * @see bootstrap.action.TbSortableAction for an easy way to use with your controller
 	 *
 	 * <pre>
-	 *  'sortableAction'=>'module/controller/sortable' | 'controller/sortable'
+	 *  'sortableAction' => 'module/controller/sortable' | 'controller/sortable'
 	 * </pre>
 	 *
 	 * The widget will make use of the string to create the URL and then append $sortableAttribute
@@ -179,7 +185,7 @@ class TbExtendedGridView extends TbGridView
 	protected $displayChart;
 
 	/**
-	 * @var array $extendedSummaryTypes hold the current configured TbOperation that will process column values.
+	 * @var TbOperation[] $extendedSummaryTypes hold the current configured TbOperation that will process column values.
 	 */
 	protected $extendedSummaryTypes = array();
 
@@ -195,24 +201,28 @@ class TbExtendedGridView extends TbGridView
 	);
 
 	/**
+	 *### .init()
+	 *
 	 * Widget initialization
 	 */
 	public function init()
 	{
 
-		if (preg_match('/extendedsummary/i', $this->template) && !empty($this->extendedSummary) && isset($this->extendedSummary['columns']))
-		{
+		if (preg_match(
+			'/extendedsummary/i',
+			$this->template
+		) && !empty($this->extendedSummary) && isset($this->extendedSummary['columns'])
+		) {
 			$this->template .= "\n{extendedSummaryContent}";
 			$this->displayExtendedSummary = true;
 		}
-		if (!empty($this->chartOptions) && @$this->chartOptions['data'] && $this->dataProvider->getItemCount())
-		{
+		if (!empty($this->chartOptions) && @$this->chartOptions['data'] && $this->dataProvider->getItemCount()) {
 			$this->displayChart = true;
 		}
-		if ($this->bulkActions !== array() && isset($this->bulkActions['actionButtons']))
-		{
-			if(!isset($this->bulkActions['class']))
+		if ($this->bulkActions !== array() && isset($this->bulkActions['actionButtons'])) {
+			if (!isset($this->bulkActions['class'])) {
 				$this->bulkActions['class'] = 'bootstrap.widgets.TbBulkActions';
+			}
 
 			$this->bulk = Yii::createComponent($this->bulkActions, $this);
 			$this->bulk->init();
@@ -221,6 +231,8 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .renderContent()
+	 *
 	 * Renders grid content
 	 */
 	public function renderContent()
@@ -230,79 +242,91 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .renderKeys()
+	 *
 	 * Renders the key values of the data in a hidden tag.
 	 */
 	public function renderKeys()
 	{
 		$data = $this->dataProvider->getData();
-		if (empty($data))
-		{
-			return false;
+		
+		if (!$this->sortableRows || !$this->getAttribute($data[0], (string)$this->sortableAttribute)) {
+			parent::renderKeys();
 		}
 
-		if(!$this->sortableRows || !$this->getAttribute($data[0], $this->sortableAttribute))
-		{
-			return parent::renderKeys();
+		echo CHtml::openTag(
+			'div',
+			array(
+				'class' => 'keys',
+				'style' => 'display:none',
+				'title' => Yii::app()->getRequest()->getUrl(),
+			)
+		);
+		foreach ($data as $d) {
+			echo CHtml::tag(
+				'span',
+				array('data-order' => $this->getAttribute($d, $this->sortableAttribute)),
+				CHtml::encode($this->getPrimaryKey($d))
+			);
 		}
-
-		echo CHtml::openTag('div',array(
-			'class'=>'keys',
-			'style'=>'display:none',
-			'title'=>Yii::app()->getRequest()->getUrl(),
-		));
-		foreach($data as $d)
-   			echo CHtml::tag('span',array('data-order' => $this->getAttribute($d, $this->sortableAttribute), ), CHtml::encode($this->getPrimaryKey($d)));
 		echo "</div>\n";
+		return true;
 	}
 
 	/**
+	 *### .getAttribute()
+	 *
 	 * Helper function to get an attribute from the data
 	 *
-	 * @param $data
-	 * @param $attribute the attribute to get
+	 * @param CActiveRecord $data
+	 * @param string $attribute the attribute to get
+	 *
 	 * @return mixed the attribute value null if none found
 	 */
 	protected function getAttribute($data, $attribute)
 	{
-		if($this->dataProvider instanceof CActiveDataProvider && $data->hasAttribute($attribute))
-		{
+		if ($this->dataProvider instanceof CActiveDataProvider && $data->hasAttribute($attribute)) {
 			return $data->{$attribute};
 		}
-		if($this->dataProvider instanceof CArrayDataProvider)
-		{
-			if (is_object($data) && isset($data->{$attribute}))
-			{
+
+		if ($this->dataProvider instanceof CArrayDataProvider || $this->dataProvider instanceof CSqlDataProvider) {
+			if (is_object($data) && isset($data->{$attribute})) {
 				return $data->{$attribute};
 			}
-			if (isset($data[$attribute]))
-			{
+			if (isset($data[$attribute])) {
 				return $data[$attribute];
 			}
 		}
 		return null;
 	}
+
 	/**
+	 *### .getPrimaryKey()
+	 *
 	 * Helper function to return the primary key of the $data
 	 * IMPORTANT: composite keys on CActiveDataProviders will return the keys joined by comma
 	 *
-	 * @param $data
+	 * @param CActiveRecord $data
+	 *
 	 * @return null|string
 	 */
 	protected function getPrimaryKey($data)
 	{
-		if($this->dataProvider instanceof CActiveDataProvider)
-		{
-			$key=$this->dataProvider->keyAttribute===null ? $data->getPrimaryKey() : $data->{$this->keyAttribute};
-			return is_array($key) ? implode(',',$key) : $key;
+		if ($this->dataProvider instanceof CActiveDataProvider) {
+			$key = $this->dataProvider->keyAttribute === null ? $data->getPrimaryKey() : $data->{$this->dataProvider->keyAttribute};
+			return is_array($key) ? implode(',', $key) : $key;
 		}
-		if($this->dataProvider instanceof CArrayDataProvider)
-		{
-			return is_object($data) ? $data->{$this->dataProvider->keyField} : $data[$this->dataProvider->keyField];
+		if ($this->dataProvider instanceof CArrayDataProvider || $this->dataProvider instanceof CSqlDataProvider) {
+			return is_object($data) ? $data->{$this->dataProvider->keyField}
+				: $data[$this->dataProvider->keyField];
 		}
+
 		return null;
 	}
 
 	/**
+	 *### .renderTableHeader()
+	 *
 	 * Renders grid header
 	 */
 	public function renderTableHeader()
@@ -312,6 +336,8 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .renderTableFooter()
+	 *
 	 * Renders the table footer.
 	 */
 	public function renderTableFooter()
@@ -319,25 +345,30 @@ class TbExtendedGridView extends TbGridView
 		$hasFilter = $this->filter !== null && $this->filterPosition === self::FILTER_POS_FOOTER;
 
 		$hasFooter = $this->getHasFooter();
-		if ($this->bulk !== null || $hasFilter || $hasFooter)
-		{
+		if ($this->bulk !== null || $hasFilter || $hasFooter) {
 			echo "<tfoot>\n";
-			if ($hasFooter)
-			{
+			if ($hasFooter) {
 				echo "<tr>\n";
-				foreach ($this->columns as $column)
+				/** @var $column CDataColumn */
+				foreach ($this->columns as $column) {
 					$column->renderFooterCell();
+				}
 				echo "</tr>\n";
 			}
-			if ($hasFilter)
+			if ($hasFilter) {
 				$this->renderFilter();
+			}
 
-			if ($this->bulk !== null)
+			if ($this->bulk !== null) {
 				$this->renderBulkActions();
+			}
 			echo "</tfoot>\n";
 		}
 	}
 
+	/**
+	 *### .renderBulkActions()
+	 */
 	public function renderBulkActions()
 	{
 		echo '<tr><td colspan="' . count($this->columns) . '">';
@@ -347,48 +378,69 @@ class TbExtendedGridView extends TbGridView
 
 
 	/**
+	 *### .renderChart()
+	 *
 	 * Renders chart
 	 * @throws CException
 	 */
 	public function renderChart()
 	{
-		if (!$this->displayChart || $this->dataProvider->getItemCount() <= 0)
+		if (!$this->displayChart || $this->dataProvider->getItemCount() <= 0) {
 			return;
+		}
 
-		if (!isset($this->chartOptions['data']['series']))
-			throw new CException(Yii::t('zii', 'You need to set the "series" attribute in order to render a chart'));
+		if (!isset($this->chartOptions['data']['series'])) {
+			throw new CException(Yii::t(
+				'zii',
+				'You need to set the "series" attribute in order to render a chart'
+			));
+		}
 
 		$configSeries = $this->chartOptions['data']['series'];
-		if (!is_array($configSeries))
+		if (!is_array($configSeries)) {
 			throw new CException(Yii::t('zii', '"chartOptions.series" is expected to be an array.'));
+		}
 
-		$chartId = 'exgvwChart' . $this->getId();
 
-		if (!isset($this->chartOptions['config']))
+		if (!isset($this->chartOptions['config'])) {
 			$this->chartOptions['config'] = array();
+		}
 
 		// ****************************************
 		// render switch buttons
-		$buttons = Yii::createComponent(array('class' => 'bootstrap.widgets.TbButtonGroup',
-			'toggle' => 'radio',
-			'buttons' => array(
-				array('label' => Yii::t('zii', 'Grid'), 'url' => '#', 'htmlOptions' => array('class' => 'active ' . $this->getId() . '-grid-control grid')),
-				array('label' => Yii::t('zii', 'Chart'), 'url' => '#', 'htmlOptions' => array('class' => $this->getId() . '-grid-control chart')),
-			),
-			'htmlOptions' => array('style' => 'margin-bottom:5px')
-		));
-		echo '<div span="row">';
+		$buttons = Yii::createComponent(
+			array(
+				'class' => 'bootstrap.widgets.TbButtonGroup',
+				'toggle' => 'radio',
+				'buttons' => array(
+					array(
+						'label' => Yii::t('zii', 'Grid'),
+						'url' => '#',
+						'htmlOptions' => array('class' => 'active ' . $this->getId() . '-grid-control grid')
+					),
+					array(
+						'label' => Yii::t('zii', 'Chart'),
+						'url' => '#',
+						'htmlOptions' => array('class' => $this->getId() . '-grid-control chart')
+					),
+				),
+				'htmlOptions' => array('style' => 'margin-bottom:5px')
+			)
+		);
+		echo '<div class="row">';
 		$buttons->init();
 		$buttons->run();
 		echo '</div>';
 
+		$chartId = preg_replace('[-\\ ?]', '_', 'exgvwChart' . $this->getId()); // cleaning out most possible characters invalid as javascript variable identifiers.
+
 		$this->componentsReadyScripts[] = '$(document).on("click",".' . $this->getId() . '-grid-control", function(){
-			if($(this).hasClass("grid") && $("#' . $this->getId() . ' #' . $chartId . '").is(":visible"))
+			if ($(this).hasClass("grid") && $("#' . $this->getId() . ' #' . $chartId . '").is(":visible"))
 			{
 				$("#' . $this->getId() . ' #' . $chartId . '").hide();
 				$("#' . $this->getId() . ' table.items").show();
 			}
-			if($(this).hasClass("chart") && $("#' . $this->getId() . ' table.items").is(":visible"))
+			if ($(this).hasClass("chart") && $("#' . $this->getId() . ' table.items").is(":visible"))
 			{
 				$("#' . $this->getId() . ' table.items").hide();
 				$("#' . $this->getId() . ' #' . $chartId . '").show();
@@ -404,18 +456,17 @@ class TbExtendedGridView extends TbGridView
 		$count = count($data);
 		$seriesData = array();
 		$cnt = 0;
-		foreach ($configSeries as $set)
-		{
+		foreach ($configSeries as $set) {
 			$seriesData[$cnt] = array('name' => isset($set['name']) ? $set['name'] : null, 'data' => array());
 
-			for ($row = 0; $row < $count; ++$row)
-			{
+			for ($row = 0; $row < $count; ++$row) {
 				$column = $this->getColumnByName($set['attribute']);
-				if (!is_null($column) && $column->value !== null)
-				{
-					$seriesData[$cnt]['data'][] = $this->evaluateExpression($column->value, array('data' => $data[$row], 'row' => $row));
-				} else
-				{
+				if (!is_null($column) && $column->value !== null) {
+					$seriesData[$cnt]['data'][] = $this->evaluateExpression(
+						$column->value,
+						array('data' => $data[$row], 'row' => $row)
+					);
+				} else {
 					$value = CHtml::value($data[$row], $set['attribute']);
 					$seriesData[$cnt]['data'][] = is_numeric($value) ? (float)$value : $value;
 				}
@@ -430,26 +481,27 @@ class TbExtendedGridView extends TbGridView
 			$this->chartOptions['config'],
 			array('series' => $seriesData)
 		);
-		$this->chartOptions['htmlOptions'] = isset($this->chartOptions['htmlOptions']) ? $this->chartOptions['htmlOptions'] : array();
+		$this->chartOptions['htmlOptions'] = isset($this->chartOptions['htmlOptions'])
+			? $this->chartOptions['htmlOptions'] : array();
 		$this->chartOptions['htmlOptions']['style'] = 'display:none'; // sorry but use a class to provide styles, we need this
 		// build unique ID
 		// important!
-		echo '<div span="row">';
-		if ($this->ajaxUpdate !== false)
-		{
-			if (isset($options['chart']) && is_array($options['chart']))
-			{
+		echo '<div class="row">';
+		if ($this->ajaxUpdate !== false) {
+			if (isset($options['chart']) && is_array($options['chart'])) {
 				$options['chart']['renderTo'] = $chartId;
-			} else
-			{
+			} else {
 				$options['chart'] = array('renderTo' => $chartId);
 			}
 			$jsOptions = CJSON::encode($options);
 
-			if (isset($this->chartOptions['htmlOptions']['data-config']))
+			if (isset($this->chartOptions['htmlOptions']['data-config'])) {
 				unset($this->chartOptions['htmlOptions']['data-config']);
+			}
 
-			echo "<div id='{$chartId}' " . CHtml::renderAttributes($this->chartOptions['htmlOptions']) . " data-config='{$jsOptions}'></div>";
+			echo "<div id='{$chartId}' " . CHtml::renderAttributes(
+				$this->chartOptions['htmlOptions']
+			) . " data-config='{$jsOptions}'></div>";
 
 			$this->componentsAfterAjaxUpdate[] = "highchart{$chartId} = new Highcharts.Chart($('#{$chartId}').data('config'));";
 		}
@@ -465,62 +517,89 @@ class TbExtendedGridView extends TbGridView
 		echo '</div>';
 		// end chart display
 		// ****************************************
-
-
 	}
 
-
 	/**
+	 *### .renderTableRow()
+	 *
 	 * Renders a table body row.
+	 *
 	 * @param integer $row the row number (zero-based).
 	 */
 	public function renderTableRow($row)
 	{
-		if ($this->rowCssClassExpression !== null)
-		{
+		$htmlOptions = array();
+		if ($this->rowHtmlOptionsExpression !== null) {
 			$data = $this->dataProvider->data[$row];
-			echo '<tr class="' . $this->evaluateExpression($this->rowCssClassExpression, array('row' => $row, 'data' => $data)) . '">';
-		} else if (is_array($this->rowCssClass) && ($n = count($this->rowCssClass)) > 0)
-			echo '<tr class="' . $this->rowCssClass[$row % $n] . '">';
-		else
-			echo '<tr>';
-		foreach ($this->columns as $column)
-		{
-			echo $this->displayExtendedSummary && !empty($this->extendedSummary['columns']) ? $this->parseColumnValue($column, $row) : $column->renderDataCell($row);
+			$options = $this->evaluateExpression(
+				$this->rowHtmlOptionsExpression,
+				array('row' => $row, 'data' => $data)
+			);
+			if (is_array($options)) {
+				$htmlOptions = $options;
+			}
 		}
-		echo "</tr>\n";
+
+		if ($this->rowCssClassExpression !== null) {
+			$data = $this->dataProvider->data[$row];
+			$class = $this->evaluateExpression($this->rowCssClassExpression, array('row' => $row, 'data' => $data));
+		} elseif (is_array($this->rowCssClass) && ($n = count($this->rowCssClass)) > 0) {
+			$class = $this->rowCssClass[$row % $n];
+		}
+
+		if (!empty($class)) {
+			if (isset($htmlOptions['class'])) {
+				$htmlOptions['class'] .= ' ' . $class;
+			} else {
+				$htmlOptions['class'] = $class;
+			}
+		}
+
+		echo CHtml::openTag('tr', $htmlOptions);
+		foreach ($this->columns as $column) {
+			echo $this->displayExtendedSummary && !empty($this->extendedSummary['columns']) ? $this->parseColumnValue(
+				$column,
+				$row
+			) : $column->renderDataCell($row);
+		}
+
+		echo CHtml::closeTag('tr');
 	}
 
 	/**
+	 *### .renderExtendedSummary()
+	 *
 	 * Renders summary
 	 */
 	public function renderExtendedSummary()
 	{
-		if (!isset($this->extendedSummaryOptions['class']))
+		if (!isset($this->extendedSummaryOptions['class'])) {
 			$this->extendedSummaryOptions['class'] = $this->extendedSummaryCssClass;
-		else
+		} else {
 			$this->extendedSummaryOptions['class'] .= ' ' . $this->extendedSummaryCssClass;
+		}
 
 		echo '<div ' . CHtml::renderAttributes($this->extendedSummaryOptions) . '></div>';
 	}
 
 	/**
+	 *### .renderExtendedSummaryContent()
+	 *
 	 * Renders summary content. Will be appended to
 	 */
 	public function renderExtendedSummaryContent()
 	{
-		if (($count = $this->dataProvider->getItemCount()) <= 0)
+		if (($count = $this->dataProvider->getItemCount()) <= 0) {
 			return;
+		}
 
-		if (!empty($this->extendedSummaryTypes))
-		{
+		if (!empty($this->extendedSummaryTypes)) {
 			echo '<div id="' . $this->id . '-extended-summary" style="display:none">';
-			if (isset($this->extendedSummary['title']))
-			{
+			if (isset($this->extendedSummary['title'])) {
 				echo '<h3>' . $this->extendedSummary['title'] . '</h3>';
 			}
-			foreach ($this->extendedSummaryTypes as $summaryType)
-			{
+			foreach ($this->extendedSummaryTypes as $summaryType) {
+				/** @var $summaryType TbOperation */
 				$summaryType->run();
 				echo '<br/>';
 			}
@@ -529,30 +608,32 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .registerCustomClientScript()
+	 *
 	 * This script must be run at the end of content rendering not at the beginning as it is common with normal CGridViews
 	 */
 	public function registerCustomClientScript()
 	{
-
+		/** @var $cs CClientScript */
 		$cs = Yii::app()->getClientScript();
 
 		$fixedHeaderJs = '';
-		if ($this->fixedHeader)
-		{
-			Yii::app()->bootstrap->registerAssetJs('jquery.stickytableheaders.js');
+		if ($this->fixedHeader) {
+			Yii::app()->bootstrap->registerAssetJs('jquery.stickytableheaders' . (!YII_DEBUG ? '.min' : '') . '.js');
 			$fixedHeaderJs = "$('#{$this->id} table.items').stickyTableHeaders({fixedOffset:{$this->headerOffset}});";
 			$this->componentsAfterAjaxUpdate[] = $fixedHeaderJs;
 		}
 
-		if ($this->sortableRows)
-		{
-			if ($this->afterSortableUpdate !== null)
-			{
-				if (!($this->afterSortableUpdate instanceof CJavaScriptExpression) && strpos($this->afterSortableUpdate, 'js:') !== 0)
-				{
+		if ($this->sortableRows) {
+			$afterSortableUpdate = '';
+			if ($this->afterSortableUpdate !== null) {
+				if (!($this->afterSortableUpdate instanceof CJavaScriptExpression) && strpos(
+					$this->afterSortableUpdate,
+					'js:'
+				) !== 0
+				) {
 					$afterSortableUpdate = new CJavaScriptExpression($this->afterSortableUpdate);
-				} else
-				{
+				} else {
 					$afterSortableUpdate = $this->afterSortableUpdate;
 				}
 			}
@@ -561,28 +642,31 @@ class TbExtendedGridView extends TbGridView
 			$cs->registerCoreScript('jquery.ui');
 			Yii::app()->bootstrap->registerAssetJs('jquery.sortable.gridview.js');
 
-			if($this->sortableAjaxSave && $this->sortableAction !== null)
-			{
-				$sortableAction = Yii::app()->createUrl($this->sortableAction, array('sortableAttribute' => $this->sortableAttribute));
-			}
-			else
+			if ($this->sortableAjaxSave && $this->sortableAction !== null) {
+				$sortableAction = Yii::app()->createUrl(
+					$this->sortableAction,
+					array('sortableAttribute' => $this->sortableAttribute)
+				);
+			} else {
 				$sortableAction = '';
+			}
 
 			$afterSortableUpdate = CJavaScript::encode($afterSortableUpdate);
 			$this->componentsReadyScripts[] = "$.fn.yiiGridView.sortable('{$this->id}', '{$sortableAction}', {$afterSortableUpdate});";
 			$this->componentsAfterAjaxUpdate[] = "$.fn.yiiGridView.sortable('{$this->id}', '{$sortableAction}', {$afterSortableUpdate});";
 		}
 
-		if($this->selectableCells)
-		{
-			if($this->afterSelectableCells !== null)
-			{
+		if ($this->selectableCells) {
+			$afterSelectableCells = '';
+			if ($this->afterSelectableCells !== null) {
 				echo strpos($this->afterSelectableCells, 'js:');
-				if (!($this->afterSelectableCells instanceof CJavaScriptExpression) && strpos($this->afterSelectableCells, 'js:') !== 0)
-				{
+				if (!($this->afterSelectableCells instanceof CJavaScriptExpression) && strpos(
+					$this->afterSelectableCells,
+					'js:'
+				) !== 0
+				) {
 					$afterSelectableCells = new CJavaScriptExpression($this->afterSelectableCells);
-				} else
-				{
+				} else {
 					$afterSelectableCells = $this->afterSelectableCells;
 				}
 			}
@@ -593,39 +677,49 @@ class TbExtendedGridView extends TbGridView
 			$this->componentsAfterAjaxUpdate[] = "$.fn.yiiGridView.selectable('{$this->id}','{$this->selectableCellsFilter}', {$afterSelectableCells});";
 		}
 
-		$cs->registerScript(__CLASS__ . '#' . $this->id . 'Ex', '
-			$grid = $("#' . $this->id . '");
+		$cs->registerScript(
+			__CLASS__ . '#' . $this->id . 'Ex',
+			'
+					   $grid = $("#' . $this->id . '");
 			' . $fixedHeaderJs . '
-			if($(".' . $this->extendedSummaryCssClass . '", $grid).length)
+			if ($(".' . $this->extendedSummaryCssClass . '", $grid).length)
 			{
 				$(".' . $this->extendedSummaryCssClass . '", $grid).html($("#' . $this->id . '-extended-summary", $grid).html());
 			}
 			' . (count($this->componentsReadyScripts) ? implode(PHP_EOL, $this->componentsReadyScripts) : '') . '
 			$.ajaxPrefilter(function (options, originalOptions, jqXHR) {
 				var qs = $.deparam.querystring(options.url);
-				if(qs.hasOwnProperty("ajax") && qs.ajax == "' . $this->id . '")
+				if (qs.hasOwnProperty("ajax") && qs.ajax == "' . $this->id . '")
 				{
 					options.realsuccess = options.success;
 					options.success = function(data)
 					{
-						if(options.realsuccess) {
+						if (options.realsuccess) {
 							options.realsuccess(data);
 							var $data = $("<div>" + data + "</div>");
 							// we need to get the grid again... as it has been updated
-							if($(".' . $this->extendedSummaryCssClass . '", $("#' . $this->id . '")))
+							if ($(".' . $this->extendedSummaryCssClass . '", $("#' . $this->id . '")))
 							{
 								$(".' . $this->extendedSummaryCssClass . '", $("#' . $this->id . '")).html($("#' . $this->id . '-extended-summary", $data).html());
 							}
-							' . (count($this->componentsAfterAjaxUpdate) ? implode(PHP_EOL, $this->componentsAfterAjaxUpdate) : '') . '
+							' . (count($this->componentsAfterAjaxUpdate) ? implode(
+				PHP_EOL,
+				$this->componentsAfterAjaxUpdate
+			) : '') . '
 						}
 					}
 				}
-			});');
+			});'
+		);
 	}
 
 	/**
+	 *### .parseColumnValue()
+	 *
 	 * @param CDataColumn $column
-	 * @param $row the current row  numbeer
+	 * @param integer $row the current row number
+	 *
+	 * @return string
 	 */
 	protected function parseColumnValue($column, $row)
 	{
@@ -633,8 +727,7 @@ class TbExtendedGridView extends TbGridView
 		$column->renderDataCell($row);
 		$value = ob_get_clean();
 
-		if ($column instanceof CDataColumn && array_key_exists($column->name, $this->extendedSummary['columns']))
-		{
+		if ($column instanceof CDataColumn && array_key_exists($column->name, $this->extendedSummary['columns'])) {
 			// lets get the configuration
 			$config = $this->extendedSummary['columns'][$column->name];
 			// add the required column object in
@@ -648,23 +741,35 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .getSummaryOperationInstance()
+	 *
 	 * Each type of 'extended' summary
-	 * @param $name the name of the column
-	 * @param $config the configuration of the column at the extendedSummary
+	 *
+	 * @param string $name the name of the column
+	 * @param array $config the configuration of the column at the extendedSummary
+	 *
 	 * @return mixed
 	 * @throws CException
 	 */
 	protected function getSummaryOperationInstance($name, $config)
 	{
-		if (!isset($config['class']))
-			throw new CException(Yii::t('zii', 'Column summary configuration must be an array containing a "type" element.'));
+		if (!isset($config['class'])) {
+			throw new CException(Yii::t(
+				'zii',
+				'Column summary configuration must be an array containing a "type" element.'
+			));
+		}
 
-		if (!in_array($config['class'], $this->extendedSummaryOperations))
-			throw new CException(Yii::t('zii', '"{operation}" is an unsupported class operation.', array('{operation}' => $config['class'])));
+		if (!in_array($config['class'], $this->extendedSummaryOperations)) {
+			throw new CException(Yii::t(
+				'zii',
+				'"{operation}" is an unsupported class operation.',
+				array('{operation}' => $config['class'])
+			));
+		}
 
 		// name of the column should be unique
-		if (!isset($this->extendedSummaryTypes[$name]))
-		{
+		if (!isset($this->extendedSummaryTypes[$name])) {
 			$this->extendedSummaryTypes[$name] = Yii::createComponent($config);
 			$this->extendedSummaryTypes[$name]->init();
 		}
@@ -672,16 +777,20 @@ class TbExtendedGridView extends TbGridView
 	}
 
 	/**
+	 *### .getColumnByName()
+	 *
 	 * Helper function to get a column by its name
-	 * @param $name
-	 * @return null
+	 *
+	 * @param string $name
+	 *
+	 * @return CDataColumn|null
 	 */
 	protected function getColumnByName($name)
 	{
-		foreach ($this->columns as $column)
-		{
-			if (strcmp($column->name, $name) === 0)
+		foreach ($this->columns as $column) {
+			if (strcmp($column->name, $name) === 0) {
 				return $column;
+			}
 		}
 		return null;
 	}
@@ -689,9 +798,11 @@ class TbExtendedGridView extends TbGridView
 }
 
 /**
- * TbOperation class
+ *## TbOperation class
  *
  * Abstract class where all types of operations extend from
+ *
+ * @package booster.widgets.grids.operations
  */
 abstract class TbOperation extends CWidget
 {
@@ -721,8 +832,13 @@ abstract class TbOperation extends CWidget
 	 */
 	public function init()
 	{
-		if (null == $this->column)
-			throw new CException(Yii::t('zii', '"{attribute}" attribute must be defined', array('{attribute}' => 'column')));
+		if (null == $this->column) {
+			throw new CException(Yii::t(
+				'zii',
+				'"{attribute}" attribute must be defined',
+				array('{attribute}' => 'column')
+			));
+		}
 	}
 
 	/**
@@ -735,7 +851,9 @@ abstract class TbOperation extends CWidget
 
 	/**
 	 * Process the row data value
+	 *
 	 * @param $value
+	 *
 	 * @return mixed
 	 */
 	abstract public function processValue($value);
@@ -753,6 +871,7 @@ abstract class TbOperation extends CWidget
  *
  * Displays a total of specified column name.
  *
+ * @package booster.widgets.grids.operations
  */
 class TbSumOperation extends TbOperation
 {
@@ -774,32 +893,39 @@ class TbSumOperation extends TbOperation
 	{
 		parent::init();
 
-		if (!in_array($this->column->type, $this->supportedTypes))
-		{
-			throw new CException(Yii::t('zii', 'Unsupported column type. Supported column types are: "{types}"', array(
-				'{types}' => implode(', ', $this->supportedTypes))));
+		if (!in_array($this->column->type, $this->supportedTypes)) {
+			throw new CException(Yii::t(
+				'zii',
+				'Unsupported column type. Supported column types are: "{types}"',
+				array(
+					'{types}' => implode(', ', $this->supportedTypes)
+				)
+			));
 		}
 	}
 
 	/**
 	 * Extracts the digital part of the calculated value.
-	 * @param $value
+	 *
+	 * @param int $value
+	 *
 	 * @return bool
 	 */
 	protected function extractNumber($value)
 	{
-		preg_match_all('/([0-9]+[,\.]?)+/', $value, $matches);
+		preg_match_all('/([+-]?[0-9]+[,\.]?)+/', $value, $matches);
 		return !empty($matches[0]) && @$matches[0][0] ? $matches[0][0] : 0;
 	}
 
 	/**
 	 * Process the value to calculate
+	 *
 	 * @param $value
+	 *
 	 * @return mixed|void
 	 */
 	public function processValue($value)
 	{
-
 		// remove html tags as we cannot access renderDataCellContent from the column
 		$clean = strip_tags($value);
 		$this->total += ((float)$this->extractNumber($clean));
@@ -811,7 +937,13 @@ class TbSumOperation extends TbOperation
 	 */
 	public function displaySummary()
 	{
-		echo strtr($this->template, array('{label}' => $this->label, '{value}' => $this->total === null ? '' : Yii::app()->format->format($this->total, $this->column->type)));
+		echo strtr(
+			$this->template,
+			array(
+				'{label}' => $this->label,
+				'{value}' => $this->total === null ? '' : Yii::app()->format->format($this->total, $this->column->type)
+			)
+		);
 	}
 }
 
@@ -820,6 +952,8 @@ class TbSumOperation extends TbOperation
  *
  * Renders a summary based on the count of specified types. For example, if a value has a type 'blue', this class will
  * count the number of times the value 'blue' has on that column.
+ *
+ * @package booster.widgets.grids.operations
  */
 class TbCountOfTypeOperation extends TbOperation
 {
@@ -853,12 +987,17 @@ class TbCountOfTypeOperation extends TbOperation
 	 */
 	public function init()
 	{
-		if (empty($this->types))
-			throw new CException(Yii::t('zii', '"{attribute}" attribute must be defined', array('{attribute}' => 'types')));
-		foreach ($this->types as $type)
-		{
-			if (!isset($type['label']))
+		if (empty($this->types)) {
+			throw new CException(Yii::t(
+				'zii',
+				'"{attribute}" attribute must be defined',
+				array('{attribute}' => 'types')
+			));
+		}
+		foreach ($this->types as $type) {
+			if (!isset($type['label'])) {
 				throw new CException(Yii::t('zii', 'The "label" of a type must be defined.'));
+			}
 		}
 		parent::init();
 	}
@@ -866,17 +1005,19 @@ class TbCountOfTypeOperation extends TbOperation
 	/**
 	 * (no phpDoc)
 	 * @see TbOperation
+	 *
 	 * @param $value
+	 *
 	 * @return mixed|void
 	 */
 	public function processValue($value)
 	{
 		$clean = strip_tags($value);
 
-		if (array_key_exists($clean, $this->types))
-		{
-			if (!isset($this->types[$clean]['value']))
+		if (array_key_exists($clean, $this->types)) {
+			if (!isset($this->types[$clean]['value'])) {
 				$this->types[$clean]['value'] = 0;
+			}
 			$this->types[$clean]['value'] += 1;
 		}
 	}
@@ -889,23 +1030,27 @@ class TbCountOfTypeOperation extends TbOperation
 	public function displaySummary()
 	{
 		$typesResults = array();
-		foreach ($this->types as $type)
-		{
-			if (!isset($type['value']))
-			{
+		foreach ($this->types as $type) {
+			if (!isset($type['value'])) {
 				$type['value'] = 0;
 			}
-			$typesResults[] = strtr($this->typeTemplate, array('{label}' => $type['label'], '{value}' => $type['value']));
 
+			$typesResults[] = strtr(
+				$this->typeTemplate,
+				array('{label}' => $type['label'], '{value}' => $type['value'])
+			);
 		}
 		echo strtr($this->template, array('{label}' => $this->label, '{types}' => implode(' ', $typesResults)));
 	}
 }
 
 /**
- * TbPercentOfTypeOperation class
+ *## TbPercentOfTypeOperation class
+ *
  * Renders a summary based on the percent count of specified types. For example, if a value has a type 'blue', this class will
  * count the percentage number of times the value 'blue' has on that column.
+ *
+ * @package booster.widgets.grids.operations
  */
 class TbPercentOfTypeOperation extends TbCountOfTypeOperation
 {
@@ -916,7 +1061,7 @@ class TbPercentOfTypeOperation extends TbCountOfTypeOperation
 	public $typeTemplate = '{label}({value}%)';
 
 	/**
-	 * @var $_total holds the total sum of the values. Required to get the percentage.
+	 * @var integer $_total holds the total sum of the values. Required to get the percentage.
 	 */
 	protected $_total;
 
@@ -928,14 +1073,17 @@ class TbPercentOfTypeOperation extends TbCountOfTypeOperation
 	{
 		$typesResults = array();
 
-		foreach ($this->types as $type)
-		{
-			if (!isset($type['value']))
-			{
+		foreach ($this->types as $type) {
+			if (!isset($type['value'])) {
 				$type['value'] = 0;
 			}
-			$type['value'] = $this->getTotal() ? number_format((float)($type['value'] / $this->getTotal()) * 100, 1) : 0;
-			$typesResults[] = strtr($this->typeTemplate, array('{label}' => $type['label'], '{value}' => $type['value']));
+
+			$type['value'] = $this->getTotal() ? number_format((float)($type['value'] / $this->getTotal()) * 100, 1)
+				: 0;
+			$typesResults[] = strtr(
+				$this->typeTemplate,
+				array('{label}' => $type['label'], '{value}' => $type['value'])
+			);
 		}
 
 		echo strtr($this->template, array('{label}' => $this->label, '{types}' => implode(' ', $typesResults)));
@@ -943,17 +1091,14 @@ class TbPercentOfTypeOperation extends TbCountOfTypeOperation
 
 	/**
 	 * Returns the total of types
-	 * @return holds|int
+	 * @return int holds
 	 */
 	protected function getTotal()
 	{
-		if (null == $this->_total)
-		{
+		if (null == $this->_total) {
 			$this->_total = 0;
-			foreach ($this->types as $type)
-			{
-				if (isset($type['value']))
-				{
+			foreach ($this->types as $type) {
+				if (isset($type['value'])) {
 					$this->_total += $type['value'];
 				}
 			}
@@ -963,9 +1108,11 @@ class TbPercentOfTypeOperation extends TbCountOfTypeOperation
 }
 
 /**
- * TbPercentOfTypeGooglePieOperation class
+ *## TbPercentOfTypeGooglePieOperation class
  *
  * Displays a Google visualization  pie chart based on the percentage count of type.
+ *
+ * @package booster.widgets.grids.operations
  */
 class TbPercentOfTypeGooglePieOperation extends TbPercentOfTypeOperation
 {
@@ -996,13 +1143,15 @@ class TbPercentOfTypeGooglePieOperation extends TbPercentOfTypeOperation
 	{
 		$this->data[] = array('Label', 'Percent');
 
-		foreach ($this->types as $type)
-		{
-			if (!isset($type['value']))
-			{
+		foreach ($this->types as $type) {
+			if (!isset($type['value'])) {
 				$type['value'] = 0;
 			}
-			$this->data[] = $this->getTotal() ? array($type['label'], (float)number_format(($type['value'] / $this->getTotal()) * 100, 1)) : 0;
+
+			$this->data[] = $this->getTotal() ? array(
+				$type['label'],
+				(float)number_format(($type['value'] / $this->getTotal()) * 100, 1)
+			) : 0;
 		}
 		$data = CJavaScript::jsonEncode($this->data);
 		$options = CJavaScript::jsonEncode($this->chartOptions);
@@ -1016,12 +1165,15 @@ class TbPercentOfTypeGooglePieOperation extends TbPercentOfTypeOperation
 	 */
 	public function registerClientScript()
 	{
-		$chart = Yii::createComponent(array('class' => 'bootstrap.widgets.TbGoogleVisualizationChart',
-			'visualization' => 'PieChart',
-			'containerId' => $this->getId(),
-			'data' => $this->data,
-			'options' => $this->chartOptions
-		));
+		$chart = Yii::createComponent(
+			array(
+				'class' => 'bootstrap.widgets.TbGoogleVisualizationChart',
+				'visualization' => 'PieChart',
+				'containerId' => $this->getId(),
+				'data' => $this->data,
+				'options' => $this->chartOptions
+			)
+		);
 		$chart->init();
 		$chart->run();
 
@@ -1039,9 +1191,11 @@ class TbPercentOfTypeGooglePieOperation extends TbPercentOfTypeOperation
 }
 
 /**
- * TbPercentOfTypeEasyPieOperation class
+ *## TbPercentOfTypeEasyPieOperation class
  *
  * Displays an chart based on jquery.easy.pie plugin
+ *
+ * @package booster.widgets.grids.operations
  */
 class TbPercentOfTypeEasyPieOperation extends TbPercentOfTypeOperation
 {
@@ -1065,17 +1219,26 @@ class TbPercentOfTypeEasyPieOperation extends TbPercentOfTypeOperation
 	// easy-pie-chart plugin options
 	// @see https://github.com/rendro/easy-pie-chart#configuration-parameter
 	public $chartOptions = array(
-		'barColor' => '#ef1e25', // The color of the curcular bar. You can pass either a css valid color string like rgb,
+		'barColor' => '#ef1e25',
+		// The color of the curcular bar. You can pass either a css valid color string like rgb,
 		// rgba hex or string colors. But you can also pass a function that accepts the current
 		// percentage as a value to return a dynamically generated color.
-		'trackColor' => '#f2f2f2', // The color of the track for the bar, false to disable rendering.
-		'scaleColor' => '#dfe0e0', // The color of the scale lines, false to disable rendering.
-		'lineCap' => 'round', // Defines how the ending of the bar line looks like. Possible values are: butt, round and square.
-		'lineWidth' => 5, // Width of the bar line in px.
-		'size' => 80, // Size of the pie chart in px. It will always be a square.
-		'animate' => false, // Time in milliseconds for a eased animation of the bar growing, or false to deactivate.
-		'onStart' => 'js:$.noop', // Callback function that is called at the start of any animation (only if animate is not false).
-		'onStop' => 'js:$.noop' // Callback function that is called at the end of any animation (only if animate is not false).
+		'trackColor' => '#f2f2f2',
+		// The color of the track for the bar, false to disable rendering.
+		'scaleColor' => '#dfe0e0',
+		// The color of the scale lines, false to disable rendering.
+		'lineCap' => 'round',
+		// Defines how the ending of the bar line looks like. Possible values are: butt, round and square.
+		'lineWidth' => 5,
+		// Width of the bar line in px.
+		'size' => 80,
+		// Size of the pie chart in px. It will always be a square.
+		'animate' => false,
+		// Time in milliseconds for a eased animation of the bar growing, or false to deactivate.
+		'onStart' => 'js:$.noop',
+		// Callback function that is called at the start of any animation (only if animate is not false).
+		'onStop' => 'js:$.noop'
+		// Callback function that is called at the end of any animation (only if animate is not false).
 	);
 
 	/**
@@ -1098,12 +1261,14 @@ class TbPercentOfTypeEasyPieOperation extends TbPercentOfTypeOperation
 		Yii::app()->bootstrap->registerAssetCss('easy-pie-chart.css');
 		Yii::app()->bootstrap->registerAssetJs('jquery.easy.pie.chart.js');
 
-
 		$options = CJavaScript::encode($this->chartOptions);
-		Yii::app()->getClientScript()->registerScript(__CLASS__ . '#percent-of-type-operation-simple-pie', '
-			$("#' . $this->column->grid->id . ' .' . $this->column->grid->extendedSummaryCssClass . ' .' . $this->chartCssClass . '")
+		Yii::app()->getClientScript()->registerScript(
+			__CLASS__ . '#percent-of-type-operation-simple-pie',
+			'
+					   $("#' . $this->column->grid->id . ' .' . $this->column->grid->extendedSummaryCssClass . ' .' . $this->chartCssClass . '")
 				.easyPieChart(' . $options . ');
-		');
+		'
+		);
 		$this->column->grid->componentsReadyScripts[__CLASS__] =
 		$this->column->grid->componentsAfterAjaxUpdate[__CLASS__] =
 			'$("#' . $this->column->grid->id . ' .' . $this->column->grid->extendedSummaryCssClass . ' .' . $this->chartCssClass . '")

@@ -1,29 +1,38 @@
 <?php
 /**
- * TbCKEditor.php
+ *## TbCKEditor class file.
  *
- * Supports new CKEditor 4
+ * @author Antonio Ramirez <antonio@clevertech.biz>
+ * @copyright Copyright &copy; Clevertech 2012-
+ * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
+ */
+
+/**
+ *## CKEditor 4 as a form input
  *
- * @author: antonio ramirez <antonio@clevertech.biz>
- * Date: 10/29/12
- * Time: 6:23 PM
+ * @see <http://docs.ckeditor.com/>
+ *
+ * @package booster.widgets.forms.inputs.wysiwyg
  */
 class TbCKEditor extends CInputWidget
 {
 	/**
-	 * @var TbActiveForm when created via TbActiveForm, this attribute is set to the form that renders the widget
+	 * @var TbActiveForm when created via TbActiveForm
+	 * This attribute is set to the form that renders the widget
 	 * @see TbActionForm->inputRow
 	 */
 	public $form;
 
 	/**
 	 * @var array the CKEditor options
-	 * @see http://docs.cksource.com/
+	 * @see <http://docs.cksource.com/>
 	 * @since 10/30/12 10:40 AM the Editor used is CKEditor 4 Beta will be updated as final version is done
 	 */
 	public $editorOptions = array();
 
 	/**
+	 *### .run()
+	 *
 	 * Display editor
 	 */
 	public function run()
@@ -36,29 +45,34 @@ class TbCKEditor extends CInputWidget
 		$this->htmlOptions['id'] = $id;
 
 		// Do we have a model?
-		if ($this->hasModel())
-		{
-			if($this->form)
+		if ($this->hasModel()) {
+			if ($this->form) {
 				$html = $this->form->textArea($this->model, $this->attribute, $this->htmlOptions);
-			else
+			} else {
 				$html = CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
-		} else
-		{
+			}
+		} else {
 			$html = CHtml::textArea($name, $this->value, $this->htmlOptions);
 		}
 		echo $html;
 	}
 
 	/**
+	 *### .registerClientScript()
+	 *
 	 * Registers required javascript
-	 * @param $id
+	 *
+	 * @param string $id
 	 */
 	public function registerClientScript($id)
 	{
 		Yii::app()->bootstrap->registerAssetJs('ckeditor/ckeditor.js');
 
-		$options = !empty($this->editorOptions)? CJavaScript::encode($this->editorOptions) : '{}';
+		$options = !empty($this->editorOptions) ? CJavaScript::encode($this->editorOptions) : '{}';
 
-		Yii::app()->clientScript->registerScript(__CLASS__.'#'.$this->getId(), "CKEDITOR.replace( '$id', $options);");
+		Yii::app()->clientScript->registerScript(
+			__CLASS__ . '#' . $this->getId(),
+			"CKEDITOR.replace( '$id', $options);"
+		);
 	}
 }
